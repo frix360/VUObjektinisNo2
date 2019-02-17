@@ -1,11 +1,10 @@
 #include <iostream>
-#include <vector>
 #include <algorithm>
 #include <iomanip>
-#include <vector>
 #include <random>
 #include <sstream>
 #include <time.h>
+
 using namespace std;
 
 enum CalculationType { MEDIAN, AVERAGE };
@@ -14,10 +13,27 @@ const int MAX_RAND_HOMEWORK_GRADES = 20;
 const int MIN_RAND_HOMEWORK_GRADES = 10;
 
 
+void *InsertToArray(int *&arr, int &length, int value) {
+    int *tmp = new int[length+1];
+
+    for (int i = 0; i < length; i++) {
+         tmp[i] = arr[i];
+    }
+
+    tmp[length] = value;
+
+    delete[] arr;
+
+    arr = tmp;
+
+    length++;
+}
+
+
 struct Student {
     string name;
     string surname;
-    vector<int> homeworkGrades;
+    int* homeworkGrades;
     int gradesCount = 0;
     int exam = 0;
 
@@ -25,6 +41,9 @@ struct Student {
         cout << "Iveskite varda ir pavarde: ";
         cin >> name >> surname;
         cout << endl;
+
+
+        homeworkGrades = new int[gradesCount];
 
         cout << "Ar sugeneruoti pazymius ir egzamino rezultata atsitiktinai (Y/N)? ";
         char c;
@@ -34,27 +53,32 @@ struct Student {
             GenerateGrades();
         } else {
             InputGrades();
-            cout << "Koks egzamino rezultatas? ";
-            cin >> exam;
+
+            do {
+                cout << "Koks egzamino rezultatas? ";
+                cin >> exam;
+            } while (!(exam >= 1 && exam <= 10));
         }
 
 
 
     }
 
-    void GenerateGrades() {
+      void GenerateGrades() {
         mt19937 gen(time(NULL)); //Standard mersenne_twister_engine seeded with rd()
         uniform_int_distribution<> gradesCountRand(MIN_RAND_HOMEWORK_GRADES, MAX_RAND_HOMEWORK_GRADES);
         uniform_int_distribution<> gradesRand(1, 10);
 
 
-        gradesCount = gradesCountRand(gen);
+        int gradesToGenerate = gradesCountRand(gen);
 
-        for (int i = 0; i < gradesCount; i++) {
-            homeworkGrades.push_back(gradesRand(gen));
+        for (int i = 0; i < gradesToGenerate; i++) {
+            InsertToArray(homeworkGrades, gradesCount, gradesRand(gen));
         }
 
+
         exam = gradesRand(gen);
+
     }
 
     void InputGrades() {
@@ -65,18 +89,15 @@ struct Student {
 
         while(cin >> grade)
         {
-              if (!(grade >= 1 && grade <= 10)) {
+            if (!(grade >= 1 && grade <= 10)) {
                 cout << "Pazymys turi buti nuo 1 iki 10, veskite toliau. " << endl;
                 continue;
             }
-            homeworkGrades.push_back(grade);
+            InsertToArray(homeworkGrades, gradesCount, grade);
         }
 
-        gradesCount = homeworkGrades.size();
-
         cin.clear();
-        cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
-
+        cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
     }
 
     float GetAverageOfHomeworkGrades() {
@@ -116,8 +137,8 @@ struct Student {
         }
     }
 };
-
 void printStudentsData(int n, Student *students, CalculationType calcType = AVERAGE);
+
 
 int main()
 {
@@ -128,7 +149,7 @@ int main()
     cout << "Kiek bus mokiniu? ";
     cin >> studentsCount;
 
-    while(cin.fail()) {
+     while(cin.fail()) {
         cin.clear();
         cin.ignore(numeric_limits<std::streamsize>::max(), '\n');
 
@@ -136,19 +157,20 @@ int main()
         cin >> studentsCount;
     }
 
+
     cout << endl;
 
     Student* students = new Student[studentsCount];
 
     for (int i = 0; i < studentsCount; i++) {
-            students[i].InputData();
+        students[i].InputData();
     }
 
     int choice;
     cout << "Kaip suskaiciuoti galutini rezultata?" << endl << "1 : Vidurkis" << endl << "2 : Mediana" << endl << "Iveskite pasirinkima: ";
     cin >> choice;
 
-    CalculationType calcType = choice == 2 ? MEDIAN : AVERAGE;
+    CalculationType calcType = choice == 1 ? AVERAGE : MEDIAN;
 
     printStudentsData(studentsCount, students, calcType);
 
