@@ -13,7 +13,7 @@ const int MAX_RAND_HOMEWORK_GRADES = 20;
 const int MIN_RAND_HOMEWORK_GRADES = 10;
 
 
-void *InsertToArray(int *&arr, int &length, int value) {
+void InsertToArray(int *&arr, int &length, int value) {
     int *tmp = new int[length+1];
 
     for (int i = 0; i < length; i++) {
